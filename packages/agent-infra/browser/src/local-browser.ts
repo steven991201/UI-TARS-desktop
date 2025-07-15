@@ -5,6 +5,8 @@
 import * as puppeteer from 'puppeteer-core';
 import { BrowserFinder } from './browser-finder';
 import { BaseBrowser } from './base-browser';
+import * as os from 'os';
+import * as path from 'path';
 
 import type { BrowserType, LaunchOptions } from './types';
 
@@ -28,6 +30,13 @@ export class LocalBrowser extends BaseBrowser {
     const viewportWidth = options?.defaultViewport?.width ?? 1280;
     const viewportHeight = options?.defaultViewport?.height ?? 800;
 
+    // Determine userDataDir based on useLocalProfile option
+    let userDataDir = options.userDataDir;
+    if (options.useLocalProfile && !userDataDir) {
+      userDataDir = this.getDefaultUserDataDir(type);
+      this.logger.info('Using local profile directory:', userDataDir);
+    }
+
     const puppeteerLaunchOptions: puppeteer.LaunchOptions = {
       browser: type,
       executablePath: path,
@@ -40,8 +49,8 @@ export class LocalBrowser extends BaseBrowser {
         // This parameter combined with `captureBeyondViewport: false`, will resolve the screenshot blinking issue.
         deviceScaleFactor: 0,
       },
-      ...(options.userDataDir && {
-        userDataDir: options.userDataDir,
+      ...(userDataDir && {
+        userDataDir: userDataDir,
       }),
       args: [
         '--no-sandbox',
@@ -140,5 +149,60 @@ export class LocalBrowser extends BaseBrowser {
       path: browserPath,
       type: browserType,
     };
+  }
+
+  /**
+   * Get the default user data directory for the specified browser type
+   * @param browserType - The type of browser (chrome, firefox)
+   * @returns The default user data directory path
+   */
+  private getDefaultUserDataDir(
+    browserType: Exclude<BrowserType, 'edge'>,
+  ): string {
+    const platform = os.platform();
+    const homeDir = os.homedir();
+
+    switch (browserType) {
+      case 'chrome':
+        switch (platform) {
+          case 'darwin': // macOS
+            return path.join(
+              homeDir,
+              'Library/Application Support/Google/Chrome/Default',
+            );
+          case 'win32': // Windows
+            return path.join(
+              homeDir,
+              'AppData/Local/Google/Chrome/User Data/Default',
+            );
+          case 'linux': // Linux
+            return path.join(homeDir, '.config/google-chrome/Default');
+          default:
+            throw new Error(
+              `Unsupported platform for Chrome profile: ${platform}`,
+            );
+        }
+      case 'firefox':
+        switch (platform) {
+          case 'darwin': // macOS
+            return path.join(
+              homeDir,
+              'Library/Application Support/Firefox/Profiles',
+            );
+          case 'win32': // Windows
+            return path.join(
+              homeDir,
+              'AppData/Roaming/Mozilla/Firefox/Profiles',
+            );
+          case 'linux': // Linux
+            return path.join(homeDir, '.mozilla/firefox');
+          default:
+            throw new Error(
+              `Unsupported platform for Firefox profile: ${platform}`,
+            );
+        }
+      default:
+        throw new Error(`Unsupported browser type: ${browserType}`);
+    }
   }
 }

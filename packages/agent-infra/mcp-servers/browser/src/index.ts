@@ -101,6 +101,10 @@ program
   .option('--user-agent <ua string>', 'specify user agent string')
   .option('--user-data-dir <path>', 'path to the user data directory.')
   .option(
+    '--use-local-profile',
+    'use the default local browser profile instead of a temporary profile',
+  )
+  .option(
     '--viewport-size <size>',
     'specify browser viewport size in pixels, for example "1280, 720"',
   )
@@ -141,6 +145,7 @@ program
             ...(options.userDataDir && {
               userDataDir: options.userDataDir,
             }),
+            useLocalProfile: options.useLocalProfile,
           },
           contextOptions,
         });

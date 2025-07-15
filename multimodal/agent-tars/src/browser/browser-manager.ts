@@ -66,7 +66,7 @@ export class BrowserManager {
    * Launch the browser with specified options
    */
   public async launchBrowser(
-    options: { headless?: boolean; cdpEndpoint?: string } = {},
+    options: { headless?: boolean; cdpEndpoint?: string; useLocalProfile?: boolean } = {},
   ): Promise<void> {
     if (this.isLaunched) {
       this.logger.info('Browser already launched, skipping launch');

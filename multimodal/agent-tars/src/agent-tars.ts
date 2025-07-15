@@ -25,6 +25,7 @@ import {
   BuiltInMCPServerName,
   AgentTARSPlannerOptions,
   BrowserState,
+  AgentTARSBrowserOptions,
 } from './types';
 import { DEFAULT_SYSTEM_PROMPT, generateBrowserRulesPrompt } from './prompt';
 import { BrowserGUIAgent, BrowserManager, BrowserToolsManager } from './browser';
@@ -496,6 +497,7 @@ Current Working Directory: ${workingDirectory}
           await this.browserManager.launchBrowser({
             headless: this.tarsOptions.browser?.headless,
             cdpEndpoint: this.tarsOptions.browser?.cdpEndpoint,
+            useLocalProfile: this.tarsOptions.browser?.useLocalProfile,
           });
         }
       } else {

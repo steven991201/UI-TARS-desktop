@@ -79,6 +79,13 @@ export interface LaunchOptions {
    * for more info.
    */
   userDataDir?: string;
+
+  /**
+   * Whether to use the local Chrome profile instead of a temporary profile
+   * If true, will use the default Chrome profile directory
+   * @default false
+   */
+  useLocalProfile?: boolean;
 }
 
 /**

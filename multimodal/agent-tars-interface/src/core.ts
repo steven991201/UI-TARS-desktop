@@ -50,6 +50,14 @@ export interface AgentTARSBrowserOptions {
    * CDP endpoint to connect to, for example "http://127.0.0.1:9222/json/version
    */
   cdpEndpoint?: string;
+
+  /**
+   * Whether to use the local browser profile instead of a temporary profile
+   * If true, will use the default browser profile directory with saved login info, cookies, etc.
+   *
+   * @defaultValue `false`
+   */
+  useLocalProfile?: boolean;
 }
 
 /**
