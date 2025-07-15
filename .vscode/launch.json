@@ -6,13 +6,13 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/multimodal/agent-tars-cli/bin/cli.js",
-      "args": ["--debug", "--open", "--model.provider", "openrouter", "--model.id", "openai/gpt-4o"],
+      "args": ["--debug", "--open", "--model.provider", "openrouter", "--model.id", "anthropic/claude-3.5-sonnet"],
       "env": {
         "NODE_ENV": "development",
         "DEBUG": "agent*,mcp*,tool*",
         "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
         "OPENROUTER_API_KEY": "${env:OPENROUTER_API_KEY}",
-        "OPENROUTER_DEFAULT_MODEL": "openai/gpt-4o"
+        "OPENROUTER_DEFAULT_MODEL": "anthropic/claude-3.5-sonnet"
       },
       "console": "integratedTerminal",
       "sourceMaps": true,
