@@ -11,7 +11,7 @@
         "NODE_ENV": "development",
         "DEBUG": "agent*,mcp*,tool*",
         "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
-        "OPENROUTER_API_KEY": "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",
+        "OPENROUTER_API_KEY": "${env:OPENROUTER_API_KEY}",
         "OPENROUTER_DEFAULT_MODEL": "openai/gpt-4o"
       },
       "console": "integratedTerminal",
@@ -33,7 +33,7 @@
         "NODE_ENV": "development",
         "DEBUG": "agent*,mcp*,tool*",
         "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
-        "OPENROUTER_API_KEY": "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",
+        "OPENROUTER_API_KEY": "${env:OPENROUTER_API_KEY}",
         "OPENROUTER_DEFAULT_MODEL": "openai/gpt-4o"
       },
       "console": "integratedTerminal",
