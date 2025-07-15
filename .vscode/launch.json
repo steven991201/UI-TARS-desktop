@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Agent TARS - Interactive UI (OpenRouter)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/multimodal/agent-tars-cli/bin/cli.js",
+      "args": ["--debug", "--open", "--model.provider", "openrouter", "--model.id", "openai/gpt-4o"],
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "agent*,mcp*,tool*",
+        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
+        "OPENROUTER_API_KEY": "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",
+        "OPENROUTER_DEFAULT_MODEL": "openai/gpt-4o"
+      },
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/multimodal/agent-tars-cli/dist/**/*.js",
+        "${workspaceFolder}/multimodal/agent/dist/**/*.js"
+      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--enable-source-maps"]
+    },
+    {
+      "name": "Debug Agent TARS - Interactive UI (OpenAI)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/multimodal/agent-tars-cli/bin/cli.js",
+      "args": ["--debug", "--open", "--model.provider", "openai", "--model.id", "gpt-4o"],
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "agent*,mcp*,tool*",
+        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
+        "OPENROUTER_API_KEY": "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",
+        "OPENROUTER_DEFAULT_MODEL": "openai/gpt-4o"
+      },
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/multimodal/agent-tars-cli/dist/**/*.js",
+        "${workspaceFolder}/multimodal/agent/dist/**/*.js"
+      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--enable-source-maps"]
+    }
+  ]
+}

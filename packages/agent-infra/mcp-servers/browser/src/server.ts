@@ -393,13 +393,93 @@ const handleToolCall = async (
           };
         }
 
+        // 클릭으로 인해 '중요해 보이는' 요청이 발생했는지 감지할 플래그
+        let importantRequestInitiated = false;
+        // 탐색(URL 변경)이 감지되었는지 플래그
+        let navigationDetected = false;
+        // 현재 URL 저장
+        const currentUrl = page.url();
+
+        // '중요해 보이는' 요청을 감시하는 핸들러
+        // 'xhr', 'fetch' 타입 요청 또는 POST/PUT/DELETE 메서드 요청을 중요하다고 간주하는 예시
+        const importantReqWatcher = (req: any) => {
+          const resourceType = req.resourceType();
+          const method = req.method();
+          if (
+            resourceType === 'xhr' ||
+            resourceType === 'fetch' ||
+            method !== 'GET'
+          ) {
+            importantRequestInitiated = true;
+          }
+        };
+
+        // 페이지 탐색(URL 변경)이 시작될 때 감지하는 핸들러
+        // 메인 프레임의 네비게이션만 감지하고 실제 URL이 변경되었는지 확인
+        const navigationWatcher = (frame: any) => {
+          if (frame === page.mainFrame()) {
+            const newUrl = frame.url();
+            if (newUrl !== currentUrl) {
+              navigationDetected = true;
+            }
+          }
+        };
+
+        // 핸들러 등록
+        page.on('request', importantReqWatcher);
+        page.on('framenavigated', navigationWatcher);
+
         try {
+          // ✅ 클릭 전에 플래그 초기화
+          importantRequestInitiated = false;
+          navigationDetected = false;
+
+          // 네비게이션 대기와 클릭을 동시에 시작하는 Promise 준비
+          const navigationPromise = page
+            .waitForNavigation({
+              waitUntil: 'networkidle2',
+              timeout: 15000,
+            })
+            .catch((err) => {
+              logger.info('Navigation did not occur or already completed');
+              return null;
+            });
+
           await Promise.race([
             element?.click(),
             new Promise((_, reject) =>
               setTimeout(() => reject(new Error('Click timeout')), 5000),
             ),
           ]);
+
+          await new Promise((r) => setTimeout(r, 500));
+
+          if (navigationDetected || importantRequestInitiated) {
+            try {
+              // 이미 준비해둔 네비게이션 Promise 대기 (최대 3초만)
+              const result = await Promise.race([
+                navigationPromise,
+                new Promise((resolve) =>
+                  setTimeout(() => resolve('timeout'), 3000),
+                ),
+              ]);
+
+              // 네트워크가 아직 안정적이지 않을 수 있으므로 추가 대기
+              await page
+                .waitForNetworkIdle({
+                  idleTime: 500,
+                  timeout: 1000,
+                })
+                .catch((e) =>
+                  logger.info('Network did not reach idle state, continuing'),
+                );
+            } catch (error) {
+              logger.info('❌ 응답 또는 URL 변경 없음 — 계속 진행');
+            }
+          }
+
+          page.off('request', importantReqWatcher);
+          page.off('framenavigated', navigationWatcher);
 
           await delay(200);
 
@@ -408,12 +488,12 @@ const handleToolCall = async (
             store.downloadedFiles,
             store.globalConfig.outputDir!,
           );
-
+          const { clickableElements } = (await ctx.buildDomTree(page)) || {};
           return {
             content: [
               {
                 type: 'text',
-                text: `Clicked element: ${args.index}${currentDownloadSuggestion}`,
+                text: `Clicked element: ${args.index}${currentDownloadSuggestion}\nclickable elements(Might be outdated, if an error occurs with the index element, use browser_get_clickable_elements to refresh it): ${clickableElements}`,
               },
             ],
             isError: false,

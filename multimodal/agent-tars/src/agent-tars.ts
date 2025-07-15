@@ -35,7 +35,7 @@ import { applyDefaultOptions } from './shared/config-utils';
 
 // @ts-expect-error
 // Default esm asset has some issues {@see https://github.com/bytedance/UI-TARS-desktop/issues/672}
-import * as browserModule from '@agent-infra/mcp-server-browser/dist/server.cjs';
+import * as browserModule from '../../../packages/agent-infra/mcp-servers/browser/dist/server.cjs';
 import * as filesystemModule from '@agent-infra/mcp-server-filesystem';
 import * as commandsModule from '@agent-infra/mcp-server-commands';
 
