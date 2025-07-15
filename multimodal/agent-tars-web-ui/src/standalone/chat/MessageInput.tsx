@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSession } from '@/common/hooks/useSession';
-import { usePlan } from '@/common/hooks/usePlan';
-import { FiSend, FiX, FiRefreshCw, FiPaperclip, FiImage, FiLoader, FiCpu } from 'react-icons/fi';
+import { FiSend, FiX, FiRefreshCw, FiImage, FiLoader } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConnectionStatus } from '@/common/types';
 import { useLocation } from 'react-router-dom';
@@ -17,7 +16,10 @@ interface MessageInputProps {
 }
 
 /**
- * MessageInput Component - Input for sending messages
+ * MessageInput Component - Core message input functionality
+ *
+ * Handles text input, image uploads, and multimodal message composition.
+ * Decoupled from action bar components for better separation of concerns.
  */
 export const MessageInput: React.FC<MessageInputProps> = ({
   isDisabled = false,
@@ -32,18 +34,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
 
-  const {
-    sendMessage,
-    isProcessing,
-    abortQuery,
-    activeSessionId,
-    checkSessionStatus,
-    setActivePanelContent,
-  } = useSession();
+  const { sendMessage, isProcessing, abortQuery, activeSessionId, checkSessionStatus } =
+    useSession();
 
-  const { currentPlan } = usePlan(activeSessionId);
-
-  // Process query from URL parameters on component mount
+  // Auto-submit query from URL parameters for direct navigation
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('q');
@@ -51,11 +45,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     if (query && !isProcessing && activeSessionId) {
       setInput(query);
 
-      // Submit the query automatically
       const submitQuery = async () => {
         try {
           await sendMessage(query);
-          // Clear input after sending
           setInput('');
         } catch (error) {
           console.error('Failed to send message:', error);
@@ -66,16 +58,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   }, [location.search, activeSessionId, isProcessing, sendMessage]);
 
-  // Ensure processing state is handled correctly
+  // Enhanced session status monitoring during active connections
   useEffect(() => {
     if (activeSessionId && connectionStatus?.connected) {
-      // Initial check of session status
       checkSessionStatus(activeSessionId);
 
-      // If session status changes, increase polling
       const intervalId = setInterval(() => {
         checkSessionStatus(activeSessionId);
-      }, 2000); // Check status every 2 seconds
+      }, 2000);
 
       return () => clearInterval(intervalId);
     }
@@ -86,11 +76,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
     if ((!input.trim() && uploadedImages.length === 0) || isDisabled) return;
 
-    // Immediately clear input field, don't wait for message to be sent
+    // Optimize UX by clearing input immediately, not waiting for server response
     const messageToSend = input.trim();
     setInput('');
 
-    // Build multimodal content if there are images
+    // Compose multimodal content when images are present
     const messageContent =
       uploadedImages.length > 0
         ? [
@@ -101,25 +91,23 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           ]
         : messageToSend;
 
-    // Clear uploaded images
     setUploadedImages([]);
 
-    // Reset textarea height immediately
+    // Reset textarea height for better visual feedback
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
     }
 
     try {
-      // Use previously saved message content to send
+      // Send the previously captured message content to avoid race conditions
       await sendMessage(messageContent);
     } catch (error) {
       console.error('Failed to send message:', error);
     }
   };
 
-  // Modified to not trigger send on Enter
+  // Ctrl+Enter shortcut for power users, Enter alone doesn't send
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Ctrl+Enter as optional shortcut to send
     if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
       handleSubmit(e);
@@ -139,32 +127,28 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
-  // Adjust textarea height based on content
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = e.target;
     setInput(target.value);
 
-    // Reset height to recalculate proper scrollHeight
+    // Dynamic height adjustment with proper calculation
     target.style.height = 'auto';
-    // Set to scrollHeight but max 200px
+    // Constrain to max height while allowing natural expansion
     target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
   };
 
-  // Auto-focus input when available
   useEffect(() => {
     if (!isDisabled && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isDisabled]);
 
-  // Dummy handler for file upload button
   const handleFileUpload = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -188,15 +172,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       reader.readAsDataURL(file);
     });
 
-    // Reset the input so the same file can be selected again
+    // Allow re-selection of the same file
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  // Handle paste event to support pasting images directly
   const handlePaste = (e: React.ClipboardEvent) => {
-    // Skip if disabled or processing
+    // Early exit for disabled states
     if (isDisabled || isProcessing) return;
 
     const items = e.clipboardData?.items;
@@ -204,19 +187,15 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
     let hasProcessedImage = false;
 
-    // Process each item in the clipboard
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
-      // Check if item is an image
       if (item.type.indexOf('image') !== -1) {
         hasProcessedImage = true;
 
-        // Get image as blob
         const blob = item.getAsFile();
         if (!blob) continue;
 
-        // Read the image file
         const reader = new FileReader();
         reader.onload = (event) => {
           if (event.target?.result) {
@@ -234,73 +213,18 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       }
     }
 
-    // If we processed at least one image, prevent the default paste behavior
+    // Preserve text pasting while handling images
     if (hasProcessedImage) {
-      // We don't prevent default completely so text can still be pasted
-      // But we still log for debugging purposes
       console.log('Processed pasted image(s)');
     }
   };
 
-  // Remove an image from the uploaded images list
   const handleRemoveImage = (index: number) => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 添加一个查看计划按钮
-  const renderPlanButton = () => {
-    // 只在实际有计划且计划已经生成时显示按钮
-    if (!currentPlan || !currentPlan.hasGeneratedPlan || currentPlan.steps.length === 0)
-      return null;
-
-    const completedSteps = currentPlan.steps.filter((step) => step.done).length;
-    const totalSteps = currentPlan.steps.length;
-    const isComplete = currentPlan.isComplete;
-
-    return (
-      <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        whileTap={{ scale: 0.9 }}
-        whileHover={{ scale: 1.05, y: -2 }}
-        onClick={() =>
-          setActivePanelContent({
-            type: 'plan',
-            source: null,
-            title: 'Task Plan',
-            timestamp: Date.now(),
-          })
-        }
-        className="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-white/80 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700/30 hover:bg-white hover:border-gray-300/50 dark:hover:bg-gray-700/50 dark:hover:border-gray-600/50 transition-all duration-200 shadow-sm"
-      >
-        {isComplete ? (
-          <FiCpu size={12} className="mr-0.5 text-green-500 dark:text-green-400" />
-        ) : (
-          <FiCpu size={12} className="mr-0.5 text-accent-500 dark:text-accent-400 animate-pulse" />
-        )}
-        View Plan
-        <span
-          className={`ml-1 px-1.5 py-0.5 rounded-full ${
-            isComplete
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-          } text-[10px]`}
-        >
-          {completedSteps}/{totalSteps}
-        </span>
-      </motion.button>
-    );
-  };
-
   return (
     <form onSubmit={handleSubmit} className="relative">
-      {/* Plan button - 仅在计划实际存在且已生成时显示 */}
-      {currentPlan && currentPlan.hasGeneratedPlan && currentPlan.steps.length > 0 && (
-        <div className="flex justify-center mb-3">{renderPlanButton()}</div>
-      )}
-
-      {/* Image preview area */}
       {uploadedImages.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
           {uploadedImages.map((image, index) => (
@@ -309,13 +233,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         </div>
       )}
 
-      {/* 修复的圆角容器结构 */}
       <div
         className={`relative overflow-hidden rounded-3xl transition-all duration-300 ${
           isFocused ? 'shadow-md' : ''
         }`}
       >
-        {/* 渐变边框背景 - 现在填充整个容器而不是使用padding */}
         <div
           className={`absolute inset-0 bg-gradient-to-r ${
             isFocused || input.trim() || uploadedImages.length > 0
@@ -324,7 +246,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           } bg-[length:200%_200%] ${isFocused ? 'opacity-100' : 'opacity-70'}`}
         ></div>
 
-        {/* 内容容器 - 稍微缩小以显示边框 */}
         <div
           className={`relative m-[2px] rounded-[1.4rem] bg-white dark:bg-gray-800 backdrop-blur-sm ${
             isDisabled ? 'opacity-90' : ''
@@ -350,7 +271,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             rows={2}
           />
 
-          {/* File upload buttons */}
           <div className="absolute left-3 bottom-2 flex items-center gap-2">
             <motion.button
               whileHover={{ scale: 1.05 }}

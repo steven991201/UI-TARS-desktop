@@ -1,23 +1,31 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiMaximize } from 'react-icons/fi';
-import { ToolResultContentPart } from '../../../types';
+import { FileDisplayMode, ToolResultContentPart } from '../../../types';
 import { MessageContent } from './MessageContent';
-import { ToggleSwitch } from './ToggleSwitch';
 import { DisplayMode } from '../types';
-import { CodeEditor } from '@/sdk/code-editor';
+import { MonacoCodeEditor } from '@/sdk/code-editor';
+import { useStableCodeContent } from '@/common/hooks/useStableValue';
+import { ThrottledHtmlRenderer } from '../../../components/ThrottledHtmlRenderer';
+
+// Constants
+const MAX_HEIGHT_CALC = 'calc(100vh - 215px)';
 
 interface FileResultRendererProps {
   part: ToolResultContentPart;
   onAction?: (action: string, data: any) => void;
+  displayMode?: FileDisplayMode;
 }
 
-export const FileResultRenderer: React.FC<FileResultRendererProps> = ({ part, onAction }) => {
-  const [htmlPreviewMode, setHtmlPreviewMode] = useState<'code' | 'preview'>('code');
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('rendered');
-
+export const FileResultRenderer: React.FC<FileResultRendererProps> = ({
+  part,
+  onAction,
+  displayMode,
+}) => {
   // If not a file result, don't render
   if (part.type !== 'file_result') return null;
+
+  // Use stable content to prevent unnecessary re-renders during streaming
+  const stableContent = useStableCodeContent(part.content || '');
 
   // File metadata parsing
   const fileName = part.path ? part.path.split('/').pop() || part.path : '';
@@ -32,9 +40,8 @@ export const FileResultRenderer: React.FC<FileResultRendererProps> = ({ part, on
   const approximateSize =
     typeof part.content === 'string' ? formatBytes(part.content.length) : 'Unknown size';
 
-  // Check if toggle should be offered
-  const shouldOfferToggle =
-    isMarkdownFile && typeof part.content === 'string' && part.content.length > 100;
+  // Determine if content is currently streaming (this would need to be passed down from parent)
+  const isStreaming = part.isStreaming || false;
 
   // Get language for code highlighting
   const getLanguage = (): string => {
@@ -81,7 +88,7 @@ export const FileResultRenderer: React.FC<FileResultRendererProps> = ({ part, on
 
   // Handle file download
   const handleDownload = () => {
-    const blob = new Blob([part.content], { type: isHtmlFile ? 'text/html' : 'text/plain' });
+    const blob = new Blob([stableContent], { type: isHtmlFile ? 'text/html' : 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -92,89 +99,32 @@ export const FileResultRenderer: React.FC<FileResultRendererProps> = ({ part, on
     URL.revokeObjectURL(url);
   };
 
-  // Handle fullscreen preview
-  const handleFullscreen = () => {
-    if (onAction) {
-      onAction('fullscreen', {
-        content: part.content,
-        fileName,
-        filePath: part.path,
-        displayMode,
-        isMarkdown: isMarkdownFile,
-      });
-    }
-  };
-
   return (
     <div className="space-y-4">
       {/* Content preview area */}
       <div className="overflow-hidden">
-        {/* HTML file toggle */}
-        {isHtmlFile && (
-          <ToggleSwitch
-            leftLabel="Source Code"
-            rightLabel="Preview"
-            value={htmlPreviewMode}
-            onChange={(value) => setHtmlPreviewMode(value as 'code' | 'preview')}
-            leftValue="code"
-            rightValue="preview"
-            className="border-b border-gray-100/60 dark:border-gray-700/30 py-2"
-          />
-        )}
-
-        {/* Markdown file toggle and fullscreen button */}
-        {isMarkdownFile && shouldOfferToggle && (
-          <div className="px-4 py-4 flex items-center justify-between">
-            <div></div>
-            <ToggleSwitch
-              leftLabel="Source"
-              rightLabel="Rendered"
-              value={displayMode}
-              onChange={(value) => setDisplayMode(value as DisplayMode)}
-              leftValue="source"
-              rightValue="rendered"
-            />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleFullscreen}
-              className="ml-3 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              title="Fullscreen preview"
-            >
-              <FiMaximize size={16} />
-            </motion.button>
-          </div>
-        )}
-
         {/* File content display */}
         <div className="overflow-hidden">
-          {isHtmlFile && htmlPreviewMode === 'preview' ? (
-            <div className="border border-gray-200/50 dark:border-gray-700/30 rounded-lg overflow-hidden bg-white dark:bg-gray-900/30 m-4">
-              <iframe
-                srcDoc={part.content}
-                className="w-full border-0 min-h-[100vh]"
-                title="HTML Preview"
-                sandbox="allow-scripts allow-same-origin"
-              />
-            </div>
+          {isHtmlFile && displayMode === 'rendered' ? (
+            <ThrottledHtmlRenderer content={stableContent} isStreaming={isStreaming} />
           ) : isImageFile ? (
             <div className="text-center p-4">
               <img
-                src={`data:image/${fileExtension};base64,${part.content}`}
+                src={`data:image/${fileExtension};base64,${stableContent}`}
                 alt={part.path}
                 className="max-w-full mx-auto border border-gray-200/50 dark:border-gray-700/30 rounded-lg"
               />
             </div>
-          ) : isCodeFile || (isHtmlFile && htmlPreviewMode === 'code') ? (
+          ) : isCodeFile || (isHtmlFile && displayMode === 'source') ? (
             <div className="p-0">
-              <CodeEditor
-                code={part.content}
+              <MonacoCodeEditor
+                code={stableContent}
                 language={getLanguage()}
                 fileName={fileName}
                 filePath={part.path}
                 fileSize={approximateSize}
                 showLineNumbers={true}
-                maxHeight="77vh"
+                maxHeight={MAX_HEIGHT_CALC}
                 className="rounded-none border-0"
                 onCopy={handleDownload}
               />
@@ -182,37 +132,37 @@ export const FileResultRenderer: React.FC<FileResultRendererProps> = ({ part, on
           ) : isMarkdownFile ? (
             displayMode === 'source' ? (
               <div className="p-0">
-                <CodeEditor
-                  code={part.content}
+                <MonacoCodeEditor
+                  code={stableContent}
                   language="markdown"
                   fileName={fileName}
                   filePath={part.path}
                   fileSize={approximateSize}
                   showLineNumbers={true}
-                  maxHeight="70vh"
+                  maxHeight={MAX_HEIGHT_CALC}
                   className="rounded-none border-0"
                 />
               </div>
             ) : (
-              <div className="prose dark:prose-invert prose-sm max-w-none p-8">
+              <div className="prose dark:prose-invert prose-sm max-w-none p-4 pt-0">
                 <MessageContent
-                  message={part.content}
+                  message={stableContent}
                   isMarkdown={true}
-                  displayMode={displayMode}
+                  displayMode={displayMode as DisplayMode}
                   isShortMessage={false}
                 />
               </div>
             )
           ) : (
             <div className="p-0">
-              <CodeEditor
-                code={part.content}
+              <MonacoCodeEditor
+                code={stableContent}
                 language="text"
                 fileName={fileName}
                 filePath={part.path}
                 fileSize={approximateSize}
                 showLineNumbers={true}
-                maxHeight="75vh"
+                maxHeight={MAX_HEIGHT_CALC}
                 className="rounded-none border-0"
               />
             </div>
@@ -226,21 +176,7 @@ export const FileResultRenderer: React.FC<FileResultRendererProps> = ({ part, on
 // Helper function for file type determination
 function determineFileType(extension: string): 'code' | 'document' | 'image' | 'other' {
   if (
-    [
-      'js',
-      'jsx',
-      'ts',
-      'tsx',
-      'py',
-      'java',
-      'c',
-      'cpp',
-      'php',
-      'html',
-      'css',
-      'json',
-      'xml',
-    ].includes(extension)
+    ['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'php', 'html', 'css'].includes(extension)
   ) {
     return 'code';
   }

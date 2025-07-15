@@ -23,7 +23,7 @@ export interface SessionMetadata {
 }
 
 /**
- * Tool result type with categorization
+ * Tool result type with categorization and timing information
  */
 export interface ToolResult {
   id: string;
@@ -34,6 +34,7 @@ export interface ToolResult {
   error?: string;
   type: ToolCategory;
   arguments?: any;
+  elapsedMs?: number;
   _extra?: { currentScreenshot: string };
 }
 
@@ -54,6 +55,10 @@ export interface Message {
   description?: string; // Added for environment inputs
   isDeepResearch?: boolean; // Added for final answer events
   title?: string; // Added for research report title
+
+  // System message specific properties
+  level?: 'info' | 'warning' | 'error';
+  details?: Record<string, any>;
 }
 
 /**
@@ -81,15 +86,16 @@ export interface ConnectionStatus {
  */
 export interface PanelContent {
   type: ToolCategory | 'plan' | 'research_report' | 'deliverable';
-  source: string | ChatCompletionContentPart[];
+  source: string | ChatCompletionContentPart[] | null;
   title: string;
   timestamp: number;
   toolCallId?: string;
   error?: string;
-  arguments?: any; // 添加 arguments 字段
+  arguments?: any;
   environmentId?: string;
   originalContent?: string | ChatCompletionContentPart[];
   _extra?: { currentScreenshot: string };
+  isStreaming?: boolean;
 }
 
 /**

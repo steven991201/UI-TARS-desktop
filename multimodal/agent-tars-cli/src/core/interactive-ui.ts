@@ -14,7 +14,6 @@ import chalk from 'chalk';
 import gradient from 'gradient-string';
 import { logger, toUserFriendlyPath } from '../utils';
 import { getBootstrapCliOptions } from './state';
-import { shouldUseGlobalWorkspace } from '../commands/workspace';
 
 interface UIServerOptions {
   appConfig: AgentTARSAppConfig;
@@ -61,16 +60,22 @@ export async function startInteractiveWebUI(options: UIServerOptions): Promise<h
   // Set static path in server config
   appConfig.ui.staticPath = staticPath;
 
+  // Get bootstrap options for build info
+  const bootstrapOptions = getBootstrapCliOptions();
+
   // Create and start the server with config
   const tarsServer = new AgentTARSServer(appConfig as Required<AgentTARSAppConfig>, {
-    agioProvider: getBootstrapCliOptions().agioProvider,
+    agioProvider: bootstrapOptions.agioProvider,
+    version: bootstrapOptions.version,
+    buildTime: bootstrapOptions.buildTime,
+    gitHash: bootstrapOptions.gitHash,
   });
   const server = await tarsServer.start();
 
   // Get the Express app instance directly from the server
   const app = tarsServer.getApp();
 
-  // Set up interactive UI
+  // Set up interactive UI (higher priority than workspace static server)
   setupUI(app, appConfig.server.port!, isDebug, staticPath);
 
   const port = appConfig.server.port!;
@@ -95,7 +100,7 @@ export async function startInteractiveWebUI(options: UIServerOptions): Promise<h
         interpolation: 'hsv',
       }) + chalk.underline(brandGradient(serverUrl)),
       '',
-      `📁 ${chalk.gray('Workspace:')} ${brandGradient(workspaceDir)}`,
+      `📁 ${chalk.gray('Workspace:')} ${brandGradient(workspaceDir)} ${chalk.dim('(browse at /')}`,
       '',
       `🤖 ${chalk.gray('Model:')} ${appConfig.model?.provider ? brandGradient(`${provider} | ${modelId}`) : chalk.gray('Not specified')}`,
     ].join('\n');
@@ -132,7 +137,7 @@ export async function startInteractiveWebUI(options: UIServerOptions): Promise<h
 }
 
 /**
- * Configure Express app to serve UI files
+ * Configure Express app to serve UI files with highest priority
  */
 function setupUI(
   app: express.Application,
@@ -144,13 +149,13 @@ function setupUI(
     logger.debug(`Using static files from: ${staticPath}`);
   }
 
-  // Middleware to inject baseURL for HTML requests
+  // Middleware to inject baseURL for HTML requests (highest priority)
   const injectBaseURL = (
     req: express.Request,
     res: express.Response,
     next: express.NextFunction,
   ) => {
-    // Only handle HTML requests
+    // Only handle HTML requests for web UI (not workspace files)
     if (!req.path.endsWith('.html') && req.path !== '/' && !req.path.match(/^\/[^.]*$/)) {
       return next();
     }
@@ -172,18 +177,41 @@ function setupUI(
     res.send(htmlContent);
   };
 
-  // Handle root path and all client-side routes
+  // Handle root path and all client-side routes with highest priority
   app.get('/', injectBaseURL);
 
-  // Handle direct access to client-side routes (for SPA)
-  app.get(/^\/[^.]*$/, injectBaseURL);
+  // Handle direct access to client-side routes (for SPA) with high priority
+  app.get(/^\/[^.]*$/, (req, res, next) => {
+    // Skip workspace file requests (files with extensions that aren't common web UI routes)
+    if (
+      req.path.includes('.') &&
+      !req.path.endsWith('.html') &&
+      !req.path.startsWith('/static/') &&
+      !req.path.startsWith('/assets/') &&
+      !req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)
+    ) {
+      return next();
+    }
 
-  // Serve static files
-  app.use(express.static(staticPath));
+    injectBaseURL(req, res, next);
+  });
 
-  // Fallback to index.html for any unmatched routes (important for SPA routing)
+  // Serve other static files from UI
   app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.includes('.')) {
+    // Only handle requests that look like UI assets
+    if (req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/)) {
+      const filePath = path.join(staticPath, req.path);
+      if (fs.existsSync(filePath)) {
+        return res.sendFile(filePath);
+      }
+    }
+    next();
+  });
+
+  // Fallback to index.html for any unmatched SPA routes (lower priority than workspace)
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.includes('.') && !req.path.startsWith('/api/')) {
+      // Only handle web UI routes, not workspace file requests
       return injectBaseURL(req, res, next);
     }
     next();

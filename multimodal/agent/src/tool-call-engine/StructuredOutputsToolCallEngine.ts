@@ -6,12 +6,12 @@
 import {
   ToolCallEngine,
   Tool,
-  PrepareRequestContext,
+  ToolCallEnginePrepareRequestContext,
   ChatCompletionCreateParams,
-  ChatCompletion,
+  ChatCompletionAssistantMessageParam,
   ChatCompletionChunk,
   MultimodalToolCallResult,
-  AgentSingleLoopReponse,
+  AgentEventStream,
   ChatCompletionMessageParam,
   ChatCompletionMessageToolCall,
   ParsedModelResponse,
@@ -93,7 +93,7 @@ ${structuredOutputInstructions}`;
    * @param context The request context
    * @returns ChatCompletionCreateParams with structured outputs configuration
    */
-  prepareRequest(context: PrepareRequestContext): ChatCompletionCreateParams {
+  prepareRequest(context: ToolCallEnginePrepareRequestContext): ChatCompletionCreateParams {
     // Define the schema for structured outputs
     const responseSchema = {
       type: 'object',
@@ -294,6 +294,7 @@ ${structuredOutputInstructions}`;
 
     return {
       content: state.contentBuffer,
+      rawContent: state.contentBuffer,
       reasoningContent: state.reasoningBuffer || undefined,
       toolCalls: state.toolCalls.length > 0 ? state.toolCalls : undefined,
       finishReason,
@@ -317,12 +318,14 @@ ${structuredOutputInstructions}`;
    * @param response The agent's response
    * @returns Formatted message parameter for conversation history
    */
-  buildHistoricalAssistantMessage(response: AgentSingleLoopReponse): ChatCompletionMessageParam {
+  buildHistoricalAssistantMessage(
+    currentLoopAssistantEvent: AgentEventStream.AssistantMessageEvent,
+  ): ChatCompletionAssistantMessageParam {
     // For structured outputs, we never use the tool_calls field
     // Instead, the JSON structure is already in the content
     return {
       role: 'assistant',
-      content: response.content || '',
+      content: currentLoopAssistantEvent.content || '',
     };
   }
 

@@ -65,7 +65,7 @@ export class Agent<T extends AgentOptions = AgentOptions>
   private modelResolver: ModelResolver;
   private temperature: number;
   private reasoningOptions: LLMReasoningOptions;
-  private runner: AgentRunner;
+  public readonly runner: AgentRunner;
   public logger = getLogger('Core');
   protected executionController: AgentExecutionController;
   private customLLMClient?: OpenAI;
@@ -141,7 +141,7 @@ export class Agent<T extends AgentOptions = AgentOptions>
     // Initialize the resolved model early if possible
     this.initializeEarlyResolvedModel();
 
-    // Initialize the runner with context options
+    // Initialize the runner with context options and streaming tool call settings
     this.runner = new AgentRunner({
       instructions: this.instructions,
       maxIterations: this.maxIterations,
@@ -153,6 +153,7 @@ export class Agent<T extends AgentOptions = AgentOptions>
       toolManager: this.toolManager,
       agent: this,
       contextAwarenessOptions: contextAwarenessOptions,
+      enableStreamingToolCallEvents: options.enableStreamingToolCallEvents ?? false,
     });
 
     // Initialize execution controller
@@ -377,15 +378,6 @@ Provide concise and accurate responses.`;
 
         // Register a cleanup handler for when execution completes
         this.executionController.registerCleanupHandler(async () => {
-          if (this.executionController.isAborted()) {
-            // Add system event to indicate abort
-            const systemEvent = this.eventStream.createEvent('system', {
-              level: 'warning',
-              message: 'Agent execution was aborted',
-            });
-            this.eventStream.sendEvent(systemEvent);
-          }
-
           // Send agent run end event regardless of whether it was aborted
           const endEvent = this.eventStream.createEvent('agent_run_end', {
             sessionId,

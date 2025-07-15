@@ -4,7 +4,7 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 1`] = `
 {
   "snapshotName": "basic",
   "executionTime": "<<TIMESTAMP>>",
-  "loopCount": 3
+  "loopCount": 4
 }
 `;
 
@@ -53,6 +53,7 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 2`] = `
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "Initiating search for 'What is Agent TARS' on Google.",
+    "rawContent": "Initiating search for 'What is Agent TARS' on Google.",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -138,13 +139,14 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 2`] = `
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "Submitting search query for 'What is Agent TARS'.",
+    "rawContent": "Submitting search query for 'What is Agent TARS'.",
     "toolCalls": [
       {
         "id": "<<ID>>",
         "type": "function",
         "function": {
           "name": "browser_action_tool",
-          "arguments": "{\\"thought\\":\\"The search query 'What is Agent TARS' has been typed into the Google search bar, so the next step is to click the 'Google 搜索' button to execute the search and retrieve results.\\",\\"step\\":\\"Click on the 'Google 搜索' button located below the search bar to submit the query and display search results.\\",\\"action\\":\\"click(point='<point>454 525</point>')\\"}"
+          "arguments": "{\\"thought\\":\\"The search query 'What is Agent TARS' is already typed into the Google search bar, so the next logical step is to click the 'Google 搜索' button to execute the search and retrieve results.\\",\\"step\\":\\"Click on the 'Google 搜索' button located below the search bar to submit the query and display search results.\\",\\"action\\":\\"click(point='<point>454 525</point>')\\"}"
         }
       }
     ],
@@ -158,7 +160,7 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 2`] = `
     "toolCallId": "<<toolCallId>>",
     "name": "browser_action_tool",
     "arguments": {
-      "thought": "The search query 'What is Agent TARS' has been typed into the Google search bar, so the next step is to click the 'Google 搜索' button to execute the search and retrieve results.",
+      "thought": "The search query 'What is Agent TARS' is already typed into the Google search bar, so the next logical step is to click the 'Google 搜索' button to execute the search and retrieve results.",
       "step": "Click on the 'Google 搜索' button located below the search bar to submit the query and display search results.",
       "action": "click(point='<point>454 525</point>')"
     },
@@ -222,7 +224,94 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 2`] = `
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "Agent TARS is an open - source multimodal AI agent released by ByteDance. It is designed to automate complex tasks by visually interpreting web content and interacting with system elements like the command line and file system. Currently, it's available for macOS, with Windows support in development.",
+    "content": "",
+    "rawContent": "",
+    "toolCalls": [
+      {
+        "id": "<<ID>>",
+        "type": "function",
+        "function": {
+          "name": "browser_action_tool",
+          "arguments": "{\\"thought\\":\\"Wait for the page to load completely to view the search results for 'What is Agent TARS'.\\",\\"step\\":\\"Wait for 5 seconds to allow the Google search results page to load.\\",\\"action\\":\\"wait()\\"}"
+        }
+      }
+    ],
+    "finishReason": "tool_calls",
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "name": "browser_action_tool",
+    "arguments": {
+      "thought": "Wait for the page to load completely to view the search results for 'What is Agent TARS'.",
+      "step": "Wait for 5 seconds to allow the Google search results page to load.",
+      "action": "wait()"
+    },
+    "startTime": "<<TIMESTAMP>>",
+    "tool": {
+      "name": "browser_action_tool",
+      "description": "A browser tool to perform the next action to complete the task.\\n\\n## Action Space\\n\\nclick(point='<point>x1 y1</point>')\\nleft_double(point='<point>x1 y1</point>')\\nright_single(point='<point>x1 y1</point>')\\ndrag(start_point='<point>x1 y1</point>', end_point='<point>x2 y2</point>')\\nhotkey(key='ctrl c') # Split keys with a space and use lowercase. Also, do not use more than 3 keys in one hotkey action.\\ntype(content='xxx') # Use escape characters \\\\', \\\\\\", and \\\\n in content part to ensure we can parse the content in normal python string format. If you want to submit your input, use \\\\n at the end of content. \\nscroll(point='<point>x1 y1</point>', direction='down or up or right or left') # Show more information on the \`direction\` side.\\nwait() #Sleep for 5s and take a screenshot to check for any changes.\\nfinished(content='xxx') # Use escape characters \\\\', \\", and \\\\n in content part to ensure we can parse the content in normal python string format.\\n\\n\\n## Note\\n- Use English in \`Thought\` part.\\n- Describe your detailed thought in \`Thought\` part.\\n- Describe your action in \`Step\` part.\\n\\n",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "thought": {
+            "type": "string",
+            "description": " your observation and small plan in one sentence, DO NOT include \\" characters to avoid failure to render in JSON"
+          },
+          "step": {
+            "type": "string",
+            "description": "Finally summarize the next action (with its target element) in one sentence"
+          },
+          "action": {
+            "type": "string",
+            "description": "some action in action space like clike or press"
+          }
+        },
+        "required": [
+          "thought",
+          "step",
+          "action"
+        ]
+      }
+    }
+  },
+  {
+    "id": "<<ID>>",
+    "type": "tool_result",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "name": "browser_action_tool",
+    "content": {
+      "action": "wait()",
+      "status": "success"
+    },
+    "elapsedMs": "<<elapsedMs>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "environment_input",
+    "timestamp": "<<TIMESTAMP>>",
+    "description": "Browser Screenshot",
+    "content": [
+      {
+        "type": "text",
+        "text": "Screenshot: "
+      },
+      {
+        "type": "image_url",
+        "image_url": "<<image_url>>"
+      }
+    ]
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": "Agent TARS is Bytedance's new open-source approach for automating complex tasks by visually interpreting web content and interacting with the command line and file system.",
+    "rawContent": "Agent TARS is Bytedance's new open-source approach for automating complex tasks by visually interpreting web content and interacting with the command line and file system.",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -231,7 +320,7 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 2`] = `
     "type": "agent_run_end",
     "timestamp": "<<TIMESTAMP>>",
     "sessionId": "<<sessionId>>",
-    "iterations": 3,
+    "iterations": 4,
     "elapsedMs": "<<elapsedMs>>",
     "status": "idle"
   }
@@ -243,7 +332,8 @@ exports[`AgentSnapshot tests > should match snapshot for gui-agent/basic 3`] = `
   "id": "<<ID>>",
   "type": "assistant_message",
   "timestamp": "<<TIMESTAMP>>",
-  "content": "Agent TARS is an open - source multimodal AI agent released by ByteDance. It is designed to automate complex tasks by visually interpreting web content and interacting with system elements like the command line and file system. Currently, it's available for macOS, with Windows support in development.",
+  "content": "Agent TARS is Bytedance's new open-source approach for automating complex tasks by visually interpreting web content and interacting with the command line and file system.",
+  "rawContent": "Agent TARS is Bytedance's new open-source approach for automating complex tasks by visually interpreting web content and interacting with the command line and file system.",
   "finishReason": "stop",
   "messageId": "<<messageId>>"
 }
@@ -321,7 +411,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " we",
+    "content": " I",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -471,9 +561,50 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
   },
   {
     "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "{",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "}",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "",
+    "isComplete": true,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "To get the weather, we first need the user's current location. So call getCurrentLocation to retrieve that information.",
+    "content": "To get the weather, I first need the user's current location. So call getCurrentLocation to retrieve that information.",
+    "rawContent": "",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -701,9 +832,80 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
   },
   {
     "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "{\\"",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "location",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "\\":\\"",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "Boston",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "\\"}",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "",
+    "isComplete": true,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "Now that we have the location \\"Boston\\", we can call getWeather with this location to get the weather information.",
+    "rawContent": "",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -804,7 +1006,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " has",
+    "content": " is",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -812,7 +1014,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " been",
+    "content": " now",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -820,7 +1022,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " retrieved",
+    "content": " available",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -860,7 +1062,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " now",
+    "content": " directly",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -868,39 +1070,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " answer",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " the",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " user",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": "'s",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " question",
+    "content": " respond",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1004,7 +1174,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " sunny",
+    "content": " Sunny",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1012,7 +1182,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " with",
+    "content": ".",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1020,7 +1190,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " a",
+    "content": " The",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1036,7 +1206,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " of",
+    "content": " is",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1108,7 +1278,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": ").",
+    "content": "),",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1116,7 +1286,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " The",
+    "content": " with",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1124,23 +1294,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " precipitation",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " chance",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " is",
+    "content": " a",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1172,7 +1326,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "%,",
+    "content": "%",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1180,7 +1334,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " humidity",
+    "content": " chance",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1188,7 +1342,23 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " is",
+    "content": " of",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " precipitation",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": ",",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1220,7 +1390,23 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "%,",
+    "content": "%",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " humidity",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": ",",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1229,14 +1415,6 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": " and",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " the",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1260,7 +1438,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " is",
+    "content": " of",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1364,7 +1542,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " sunny",
+    "content": " Sunny",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1372,7 +1550,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " with",
+    "content": ".",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1380,7 +1558,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " a",
+    "content": " The",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1396,7 +1574,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " of",
+    "content": " is",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1468,7 +1646,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": ").",
+    "content": "),",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1476,7 +1654,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " The",
+    "content": " with",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1484,23 +1662,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " precipitation",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " chance",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " is",
+    "content": " a",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1532,7 +1694,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "%,",
+    "content": "%",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1540,7 +1702,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " humidity",
+    "content": " chance",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1548,7 +1710,23 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " is",
+    "content": " of",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " precipitation",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": ",",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1580,7 +1758,23 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "%,",
+    "content": "%",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " humidity",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": ",",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1589,14 +1783,6 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": " and",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " the",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1620,7 +1806,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " is",
+    "content": " of",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1660,7 +1846,8 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls 2`
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "The weather information for Boston has been retrieved, so we can now answer the user's question with the details.\\nIn Boston, the weather today is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind speed is 5 mph.</think>In Boston, the weather today is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind speed is 5 mph.",
+    "content": "The weather information for Boston is now available, so we can directly respond with the details.\\nIn Boston, the weather today is Sunny. The temperature is 70°F (21°C), with a 10% chance of precipitation, 45% humidity, and wind speed of 5 mph.</think>In Boston, the weather today is Sunny. The temperature is 70°F (21°C), with a 10% chance of precipitation, 45% humidity, and wind speed of 5 mph.",
+    "rawContent": "",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -1708,9 +1895,40 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-pr
   },
   {
     "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "{}",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getCurrentLocation",
+    "arguments": "",
+    "isComplete": true,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "",
+    "rawContent": "<tool_call>\\n{\\n  \\"name\\": \\"getCurrentLocation\\",\\n  \\"parameters\\": {}\\n}\\n</tool_call>",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -1754,9 +1972,150 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-pr
   },
   {
     "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "{",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "\\n",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "   ",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": " \\"",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "location",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "\\":",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": " \\"",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "Boston",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "\\"",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "\\n",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": " ",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": " }",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_tool_call",
+    "timestamp": "<<TIMESTAMP>>",
+    "toolCallId": "<<toolCallId>>",
+    "toolName": "getWeather",
+    "arguments": "",
+    "isComplete": true,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "",
+    "rawContent": "<tool_call>\\n{\\n  \\"name\\": \\"getWeather\\",\\n  \\"parameters\\": {\\n    \\"location\\": \\"Boston\\"\\n  }\\n}\\n</tool_call>",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -1817,7 +2176,15 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-pr
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "In",
+    "content": "Today",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " in",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -1826,14 +2193,6 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-pr
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": " Boston",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " today",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2177,7 +2536,8 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-pr
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind is blowing at 5 mph.",
+    "content": "Today in Boston, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind is blowing at 5 mph.",
+    "rawContent": "Today in Boston, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind is blowing at 5 mph.",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -2227,7 +2587,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "I'll",
+    "content": "I",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2235,7 +2595,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " check the weather for your current",
+    "content": "'ll check the weather for you. First",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2243,7 +2603,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " location.",
+    "content": ", I need to find your current location.",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2251,7 +2611,8 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "I'll check the weather for your current location.",
+    "content": "I'll check the weather for you. First, I need to find your current location.",
+    "rawContent": "I'll check the weather for you. First, I need to find your current location.",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2305,7 +2666,31 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "'ll check the weather in Boston for you.",
+    "content": "'ll",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " check the current",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " weather in",
+    "isComplete": false,
+    "messageId": "<<messageId>>"
+  },
+  {
+    "id": "<<ID>>",
+    "type": "assistant_streaming_message",
+    "timestamp": "<<TIMESTAMP>>",
+    "content": " Boston for you.",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2313,7 +2698,8 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "I'll check the weather in Boston for you.",
+    "content": "I'll check the current weather in Boston for you.",
+    "rawContent": "I'll check the current weather in Boston for you.",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2374,7 +2760,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "It's",
+    "content": "The weather in Boston today",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2382,7 +2768,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " a beautiful day in Boston!",
+    "content": " is sunny with a",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2390,7 +2776,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " Currently 70°F",
+    "content": " temperature of 70°",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2398,7 +2784,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " (21°C",
+    "content": "F (21°C). There",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2406,7 +2792,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": ") and sunny with",
+    "content": "'s low precipitation chance at 10%",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2414,7 +2800,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": " low humidity (45%). There",
+    "content": ", humidity is at 45%, an",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2422,39 +2808,7 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_streaming_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "'s a gentle breeze at",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " 5 mph",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " and only",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " a 10% chance",
-    "isComplete": false,
-    "messageId": "<<messageId>>"
-  },
-  {
-    "id": "<<ID>>",
-    "type": "assistant_streaming_message",
-    "timestamp": "<<TIMESTAMP>>",
-    "content": " of precipitation.",
+    "content": "d a light wind of 5 mph.",
     "isComplete": false,
     "messageId": "<<messageId>>"
   },
@@ -2462,7 +2816,8 @@ exports[`AgentSnapshot tests > should match snapshot for streaming/tool-calls-st
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "It's a beautiful day in Boston! Currently 70°F (21°C) and sunny with low humidity (45%). There's a gentle breeze at 5 mph and only a 10% chance of precipitation.",
+    "content": "The weather in Boston today is sunny with a temperature of 70°F (21°C). There's low precipitation chance at 10%, humidity is at 45%, and a light wind of 5 mph.",
+    "rawContent": "The weather in Boston today is sunny with a temperature of 70°F (21°C). There's low precipitation chance at 10%, humidity is at 45%, and a light wind of 5 mph.",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -2513,6 +2868,7 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/basic 2`] = 
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "To get the weather, I first need your current location. Retrieving your location...",
+    "rawContent": "To get the weather, I first need your current location. Retrieving your location...",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2559,6 +2915,7 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/basic 2`] = 
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "Fetching weather for Boston...",
+    "rawContent": "Fetching weather for Boston...",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2619,7 +2976,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/basic 2`] = 
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "In Boston today, it's Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind is 5 mph.",
+    "content": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
+    "rawContent": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -2640,7 +2998,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/basic 3`] = 
   "id": "<<ID>>",
   "type": "assistant_message",
   "timestamp": "<<TIMESTAMP>>",
-  "content": "In Boston today, it's Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind is 5 mph.",
+  "content": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
+  "rawContent": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
   "finishReason": "stop",
   "messageId": "<<messageId>>"
 }
@@ -2678,6 +3037,7 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/prompt-engin
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "",
+    "rawContent": "<tool_call>\\n{\\n  \\"name\\": \\"getCurrentLocation\\",\\n  \\"parameters\\": {}\\n}\\n</tool_call>",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2724,6 +3084,7 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/prompt-engin
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "",
+    "rawContent": "<tool_call>\\n{\\n  \\"name\\": \\"getWeather\\",\\n  \\"parameters\\": {\\n    \\"location\\": \\"Boston\\"\\n  }\\n}\\n</tool_call>",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2784,7 +3145,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/prompt-engin
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind is blowing at 5 mph.",
+    "content": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind speed is 5 mph.",
+    "rawContent": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind speed is 5 mph.",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -2805,7 +3167,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/prompt-engin
   "id": "<<ID>>",
   "type": "assistant_message",
   "timestamp": "<<TIMESTAMP>>",
-  "content": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind is blowing at 5 mph.",
+  "content": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind speed is 5 mph.",
+  "rawContent": "In Boston today, the weather is sunny with a temperature of 70°F (21°C). The precipitation chance is 10%, humidity is 45%, and the wind speed is 5 mph.",
   "finishReason": "stop",
   "messageId": "<<messageId>>"
 }
@@ -2843,6 +3206,7 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "To get the weather, I first need your current location. Retrieving location...",
+    "rawContent": "To get the weather, I first need your current location. Retrieving location...",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2889,6 +3253,7 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
     "content": "Fetching weather for Boston...",
+    "rawContent": "Fetching weather for Boston...",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -2949,7 +3314,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "In Boston, today's weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
+    "content": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
+    "rawContent": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -2970,7 +3336,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
   "id": "<<ID>>",
   "type": "assistant_message",
   "timestamp": "<<TIMESTAMP>>",
-  "content": "In Boston, today's weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
+  "content": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
+  "rawContent": "Today in Boston, the weather is Sunny with a temperature of 70°F (21°C). Precipitation is 10%, humidity is 45%, and wind speed is 5 mph.",
   "finishReason": "stop",
   "messageId": "<<messageId>>"
 }
@@ -3007,7 +3374,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "I'll check the weather for your current location.",
+    "content": "I'll check the weather for you. First, I need to determine your location.",
+    "rawContent": "I'll check the weather for you. First, I need to determine your location.",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -3053,7 +3421,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "Let me check the current weather in Boston for you.",
+    "content": "I'll check the current weather in Boston for you.",
+    "rawContent": "I'll check the current weather in Boston for you.",
     "toolCalls": [
       {
         "id": "<<ID>>",
@@ -3114,7 +3483,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
     "id": "<<ID>>",
     "type": "assistant_message",
     "timestamp": "<<TIMESTAMP>>",
-    "content": "The weather in Boston today is sunny with a temperature of 70°F (21°C). There's a 10% chance of precipitation, humidity is at 45%, and wind speed is 5 mph. It's a beautiful day!",
+    "content": "Today in Boston, it's 70°F (21°C) and sunny with only a 10% chance of precipitation. The humidity is at 45% with light winds at 5 mph. It's a beautiful day!",
+    "rawContent": "Today in Boston, it's 70°F (21°C) and sunny with only a 10% chance of precipitation. The humidity is at 45% with light winds at 5 mph. It's a beautiful day!",
     "finishReason": "stop",
     "messageId": "<<messageId>>"
   },
@@ -3135,7 +3505,8 @@ exports[`AgentSnapshot tests > should match snapshot for tool-calls/structured-o
   "id": "<<ID>>",
   "type": "assistant_message",
   "timestamp": "<<TIMESTAMP>>",
-  "content": "The weather in Boston today is sunny with a temperature of 70°F (21°C). There's a 10% chance of precipitation, humidity is at 45%, and wind speed is 5 mph. It's a beautiful day!",
+  "content": "Today in Boston, it's 70°F (21°C) and sunny with only a 10% chance of precipitation. The humidity is at 45% with light winds at 5 mph. It's a beautiful day!",
+  "rawContent": "Today in Boston, it's 70°F (21°C) and sunny with only a 10% chance of precipitation. The humidity is at 45% with light winds at 5 mph. It's a beautiful day!",
   "finishReason": "stop",
   "messageId": "<<messageId>>"
 }

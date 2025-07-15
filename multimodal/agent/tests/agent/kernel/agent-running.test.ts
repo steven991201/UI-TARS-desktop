@@ -5,14 +5,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AgentSnapshotNormalizer } from '../../../../agent-snapshot';
-import {
-  Agent,
-  AgentEventStream,
-  Tool,
-  AgentStatus,
-  ChatCompletionMessageToolCall,
-} from '../../../src';
-import { OpenAI, z } from '@multimodal/model-provider';
+import { Agent, Tool, AgentStatus, ChatCompletionMessageToolCall, z } from '../../../src';
+import { OpenAI } from '@multimodal/model-provider';
 import { createTestAgent, setupAgentTest } from './utils/testUtils';
 
 const normalizer = new AgentSnapshotNormalizer({});
@@ -93,15 +87,34 @@ describe('Agent Running Behavior', () => {
     });
 
     it('should properly abort execution', async () => {
-      // Start execution with a mock that never resolves
+      // Start execution with a mock that handles abort signal properly
       const slowLLMClient = {
         chat: {
           completions: {
             create: vi.fn().mockImplementation(
-              () =>
-                new Promise((resolve) => {
-                  // This promise will never resolve unless aborted
+              (params, options) =>
+                new Promise((resolve, reject) => {
+                  // Check if signal is already aborted
+                  if (options?.signal?.aborted) {
+                    reject(new Error('AbortError'));
+                    return;
+                  }
+
+                  // Listen for abort events
+                  const abortHandler = () => {
+                    clearTimeout(timeout);
+                    reject(new Error('AbortError'));
+                  };
+
+                  if (options?.signal) {
+                    options.signal.addEventListener('abort', abortHandler);
+                  }
+
+                  // This promise will be aborted before resolving
                   const timeout = setTimeout(() => {
+                    if (options?.signal) {
+                      options.signal.removeEventListener('abort', abortHandler);
+                    }
                     resolve({
                       choices: [{ message: { content: 'Too late' } }],
                     });
@@ -135,8 +148,9 @@ describe('Agent Running Behavior', () => {
         clearTimeout(testContext.mocks.timeout);
       }
 
-      // The run promise should eventually reject due to abortion
-      expect(await runPromise).toMatchInlineSnapshot(`
+      // The run promise should eventually resolve with abort message as AssistantMessageEvent
+      const result = await runPromise;
+      expect(result).toMatchInlineSnapshot(`
         {
           "id": "<<ID>>",
           "type": "assistant_message",

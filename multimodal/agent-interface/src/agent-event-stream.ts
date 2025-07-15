@@ -9,7 +9,7 @@ import {
   ChatCompletionContentPart,
   ChatCompletionMessageToolCall,
 } from '@multimodal/model-provider/types';
-import { AgentSingleLoopReponse, AgentStatus } from './agent-instance';
+import { AgentStatus } from './agent-instance';
 import { AgentRunObjectOptions, AgentRunOptions } from './agent-run-options';
 
 /**
@@ -47,6 +47,7 @@ export namespace AgentEventStream {
      */
     | 'assistant_streaming_message'
     | 'assistant_streaming_thinking_message'
+    | 'assistant_streaming_tool_call'
 
     /**
      * Tool execution events - track individual tool calls and their results
@@ -108,6 +109,9 @@ export namespace AgentEventStream {
     /** The assistant's response content */
     content: string;
 
+    /** The assistant's original response content */
+    rawContent?: string;
+
     /** Tool calls made by the assistant (if any) */
     toolCalls?: ChatCompletionMessageToolCall[];
 
@@ -167,6 +171,41 @@ export namespace AgentEventStream {
 
     /** Whether this is the final reasoning chunk */
     isComplete?: boolean;
+  }
+
+  /**
+   * Assistant streaming tool call event - for real-time tool call updates
+   *
+   * This event provides incremental updates as tool calls are being constructed
+   * during streaming responses. The arguments field contains only the delta (incremental part)
+   * to optimize performance for large tool calls like write_file operations.
+   */
+  export interface AssistantStreamingToolCallEvent extends BaseEvent {
+    type: 'assistant_streaming_tool_call';
+
+    /** Tool call ID being constructed */
+    toolCallId: string;
+
+    /** Tool name (may be empty if still being constructed) */
+    toolName: string;
+
+    /**
+     * Delta arguments - only the incremental part of arguments in this chunk.
+     * Client should accumulate these deltas to build complete arguments.
+     *
+     * This delta-based design optimizes performance for tools with large payloads
+     * such as write_file operations that may generate substantial argument chunks.
+     */
+    arguments: string;
+
+    /** Whether this tool call is complete */
+    isComplete: boolean;
+
+    /**
+     * Unique message identifier that links streaming tool calls to their final message
+     * This allows clients to correlate incremental updates with complete messages
+     */
+    messageId?: string;
   }
 
   /**
@@ -398,6 +437,7 @@ export namespace AgentEventStream {
     assistant_thinking_message: AssistantThinkingMessageEvent;
     assistant_streaming_message: AssistantStreamingMessageEvent;
     assistant_streaming_thinking_message: AssistantStreamingThinkingMessageEvent;
+    assistant_streaming_tool_call: AssistantStreamingToolCallEvent;
     tool_call: ToolCallEvent;
     tool_result: ToolResultEvent;
     system: SystemEvent;
@@ -508,14 +548,10 @@ export namespace AgentEventStream {
       callback: (
         event:
           | AgentEventStream.AssistantStreamingMessageEvent
-          | AgentEventStream.AssistantStreamingThinkingMessageEvent,
+          | AgentEventStream.AssistantStreamingThinkingMessageEvent
+          | AgentEventStream.AssistantStreamingToolCallEvent,
       ) => void,
     ): () => void;
-
-    /**
-     * Get the latest assistant response
-     */
-    getLatestAssistantResponse(): AgentSingleLoopReponse | null;
 
     /**
      * Get tool call results since the last assistant message

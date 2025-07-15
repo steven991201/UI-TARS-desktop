@@ -29,6 +29,7 @@ export const AGENT_TARS_DEFAULT_OPTIONS: AgentTARSOptions = {
   maxIterations: 100,
   maxTokens: 8192,
   planner: true,
+  enableStreamingToolCallEvents: true,
 };
 
 /**
